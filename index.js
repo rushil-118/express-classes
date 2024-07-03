@@ -31,5 +31,25 @@ app.post('/courses', (req, res) => {
 
     courses.push(newCourse);
     
-    res.json({ message: 'Data received successfully', data: newCourse });
+    res.json({data: courses });
 })
+
+app.put('/courses', (req, res) => {
+    const courseId = parseInt(req.body.id);
+    const updatedData = req.body;
+
+    const course = courses.find(c => c.id === courseId);
+    course.name = updatedData.name || course.name;
+
+    res.json({ data: course });
+});
+
+app.delete('/courses', (req, res) => {
+    const courseId = parseInt(req.body.id);
+
+    const courseIndex = courses.findIndex(c => c.id === courseId);
+
+    courses.splice(courseIndex, 1);
+
+    res.json({ data: courses });
+});
