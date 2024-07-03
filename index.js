@@ -13,6 +13,23 @@ app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 })
 
+
+app.use(logger_middleware);
+
+function logger_middleware(req, res, next){
+    //console.log method, ip, hostname, date
+    
+    const method = req.method;
+    const ip = req.ip;
+    const hostname = req.hostname;
+    const date = new Date().toISOString();
+
+    console.log(`[${date}] ${method} request from ${hostname} (IP: ${ip})`);
+
+    next(); // Call the next middleware or route handler
+    
+}
+
 app.get('/courses', (req, res) => {
     res.json(courses);
 })
@@ -34,22 +51,60 @@ app.post('/courses', (req, res) => {
     res.json({data: courses });
 })
 
-app.put('/courses', (req, res) => {
-    const courseId = parseInt(req.body.id);
-    const updatedData = req.body;
+app.put('/courses/:id', (req, res) => {
+    // const courseId = parseInt(req.body.id);
+    // const updatedData = req.body;
 
-    const course = courses.find(c => c.id === courseId);
-    course.name = updatedData.name || course.name;
+    // const course = courses.find(c => c.id === courseId);
+    // course.name = updatedData.name || course.name;
 
-    res.json({ data: course });
+    // res.json({ data: course });
+
+    try{
+        let SingleCourse = courses.find((course) => {
+            return course.id === +req.params.id
+        })
+        if(!SingleCourse){
+            res.status(404).send('course not found');
+        }
+
+        SingleCourse.name = req.body.name;
+        res.send(courses);
+    } catch (err) {
+        res.status(500).send(err);
+    }
+
 });
 
-app.delete('/courses', (req, res) => {
-    const courseId = parseInt(req.body.id);
+app.delete('/courses/:id', (req, res) => {
+    // const courseId = parseInt(req.body.id);
 
-    const courseIndex = courses.findIndex(c => c.id === courseId);
+    // const courseIndex = courses.findIndex(c => c.id === courseId);
 
-    courses.splice(courseIndex, 1);
+    // courses.splice(courseIndex, 1);
 
-    res.json({ data: courses });
+    // res.json({ data: courses });
+
+    try{
+        const courseId = parseInt(req.params.id);
+
+        const courseIndex = courses.findIndex(c => c.id === courseId);
+        if (courseIndex === -1) {
+            return res.status(404).json({ message: 'Course not found' });
+        }
+
+        courses.splice(courseIndex, 1);
+
+        res.json({ data: courses });
+
+    } catch (err) {
+        res.status(500).send(err);
+    }
 });
+
+
+function middleware(req, res, next){
+    console.log("called");
+    next();
+}
+
